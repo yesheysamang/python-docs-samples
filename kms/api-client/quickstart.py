@@ -13,6 +13,8 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 
+import os
+
 
 def run_quickstart():
     # [START kms_quickstart]
@@ -21,6 +23,9 @@ def run_quickstart():
 
     # Your Google Cloud Platform project ID
     project_id = 'YOUR_PROJECT_ID'
+    # [END kms_quickstart]
+    project_id = os.environ['GCLOUD_PROJECT']
+    # [START kms_quickstart]
 
     # Lists keys in the "global" location.
     location = 'global'
