@@ -29,7 +29,7 @@ def create_key_ring(project_id, location_id, key_ring_id):
     client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the location associated with the KeyRing.
-    parent = client.location_path(project_id, location)
+    parent = client.location_path(project_id, location_id)
 
     # Create KeyRing
     response = client.create_key_ring(parent, key_ring_id)
@@ -60,12 +60,9 @@ def create_crypto_key(project_id, location_id, key_ring_id, crypto_key_id):
 
 
 # [START kms_encrypt]
-def encrypt(project_id, location_id, key_ring_id, crypto_key_id,
-            plaintext_file_name, ciphertext_file_name):
-    """Encrypts data from plaintext_file_name using the provided CryptoKey and
-    saves it to ciphertext_file_name so it can only be recovered with a call to
-    decrypt.
-    """
+def encrypt_symmetric(project_id, location_id, key_ring_id, crypto_key_id,
+                      plaintext):
+    """Encrypts input plaintext data using the provided symmetric CryptoKey."""
 
     # Creates an API client for the KMS API.
     client = kms_v1.KeyManagementServiceClient()
@@ -74,31 +71,20 @@ def encrypt(project_id, location_id, key_ring_id, crypto_key_id,
     name = 'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}'.format(
         project_id, location_id, key_ring_id, crypto_key_id)
 
-    # Read data from the input file.
-    with io.open(plaintext_file_name, 'rb') as plaintext_file:
-        plaintext = plaintext_file.read()
+    name = client.crypto_key_path_path(project_id, location_id, key_ring_id,
+                                       crypto_key_id)
 
     # Use the KMS API to encrypt the data.
-    crypto_keys = kms_client.projects().locations().keyRings().cryptoKeys()
-    request = crypto_keys.encrypt(
-        name=name,
-        body={'plaintext': base64.b64encode(plaintext).decode('ascii')})
-    response = request.execute()
-    ciphertext = base64.b64decode(response['ciphertext'].encode('ascii'))
+    response = client.encrypt(name, plaintext)
+    return response.ciphertext
 
-    # Write the encrypted data to a file.
-    with io.open(ciphertext_file_name, 'wb') as ciphertext_file:
-        ciphertext_file.write(ciphertext)
-
-    print('Saved ciphertext to {}.'.format(ciphertext_file_name))
 # [END kms_encrypt]
 
 
 # [START kms_decrypt]
-def decrypt(project_id, location_id, key_ring_id, crypto_key_id,
-            ciphertext_file_name, plaintext_file_name):
-    """Decrypts data from ciphertext_file_name that was previously encrypted
-    using the provided CryptoKey and saves it to plaintext_file_name."""
+def decrypt_symettric(project_id, location_id, key_ring_id, crypto_key_id,
+                      ciphertext):
+    """Decrypts input ciphertext using the provided symmetric CryptoKey."""
 
     # Creates an API client for the KMS API.
     client = kms_v1.KeyManagementServiceClient()
@@ -107,23 +93,11 @@ def decrypt(project_id, location_id, key_ring_id, crypto_key_id,
     name = 'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}'.format(
         project_id, location_id, key_ring_id, crypto_key_id)
 
-    # Read encrypted data from the input file.
-    with io.open(ciphertext_file_name, 'rb') as ciphertext_file:
-        ciphertext = ciphertext_file.read()
-
     # Use the KMS API to decrypt the data.
-    crypto_keys = kms_client.projects().locations().keyRings().cryptoKeys()
-    request = crypto_keys.decrypt(
-        name=name,
-        body={'ciphertext': base64.b64encode(ciphertext).decode('ascii')})
-    response = request.execute()
-    plaintext = base64.b64decode(response['plaintext'].encode('ascii'))
+    response = client.decrypt(name, ciphertext)
+    return response.plaintext
 
-    # Write the decrypted data to a file.
-    with io.open(plaintext_file_name, 'wb') as plaintext_file:
-        plaintext_file.write(plaintext)
 
-    print('Saved plaintext to {}.'.format(plaintext_file_name))
 # [END kms_decrypt]
 
 
