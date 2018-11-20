@@ -68,21 +68,17 @@ def encrypt_symmetric(project_id, location_id, key_ring_id, crypto_key_id,
     client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the CryptoKey.
-    name = 'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}'.format(
-        project_id, location_id, key_ring_id, crypto_key_id)
-
     name = client.crypto_key_path_path(project_id, location_id, key_ring_id,
                                        crypto_key_id)
 
     # Use the KMS API to encrypt the data.
     response = client.encrypt(name, plaintext)
     return response.ciphertext
-
 # [END kms_encrypt]
 
 
 # [START kms_decrypt]
-def decrypt_symettric(project_id, location_id, key_ring_id, crypto_key_id,
+def decrypt_symmettric(project_id, location_id, key_ring_id, crypto_key_id,
                       ciphertext):
     """Decrypts input ciphertext using the provided symmetric CryptoKey."""
 
@@ -90,14 +86,11 @@ def decrypt_symettric(project_id, location_id, key_ring_id, crypto_key_id,
     client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the CryptoKey.
-    name = 'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}'.format(
-        project_id, location_id, key_ring_id, crypto_key_id)
-
+    name = client.crypto_key_path_path(project_id, location_id, key_ring_id,
+                                       crypto_key_id)
     # Use the KMS API to decrypt the data.
     response = client.decrypt(name, ciphertext)
     return response.plaintext
-
-
 # [END kms_decrypt]
 
 
@@ -111,20 +104,16 @@ def disable_crypto_key_version(project_id, location_id, key_ring_id,
     client = kms_v1.KeyManagementServiceClient()
 
     # Construct the resource name of the CryptoKeyVersion.
-    name = (
-        'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}/'
-        'cryptoKeyVersions/{}'
-        .format(
-            project_id, location_id, key_ring_id, crypto_key_id, version_id))
+    name = client.crypto_key_version_path(project_id, location_id, key_ring_id,
+                                          crypto_key_id, version_id)
 
     # Use the KMS API to disable the CryptoKeyVersion.
-    crypto_keys = kms_client.projects().locations().keyRings().cryptoKeys()
-    request = crypto_keys.cryptoKeyVersions().patch(
-        name=name, body={'state': 'DISABLED'}, updateMask='state')
-    response = request.execute()
+    crypto_key_version = {'name': name, 'state': enums.CryptoKeyVersion.DISABLED}
+    update_mask = {'paths': ["state"]}
 
+    response = client.update_crypto_key_version(crypto_key_version, update_mask)
     print('CryptoKeyVersion {}\'s state has been set to {}.'.format(
-        name, response['state']))
+        name, response.state))
 # [END kms_disable_cryptokey_version]
 
 
@@ -138,20 +127,16 @@ def enable_crypto_key_version(project_id, location_id, key_ring_id,
     client = kms_v1.KeyManagementServiceClient()
 
     # Construct the resource name of the CryptoKeyVersion.
-    name = (
-        'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}/'
-        'cryptoKeyVersions/{}'
-        .format(
-            project_id, location_id, key_ring_id, crypto_key_id, version_id))
+    name = client.crypto_key_version_path(project_id, location_id, key_ring_id,
+                                          crypto_key_id, version_id)
 
-    # Use the KMS API to enable the CryptoKeyVersion.
-    crypto_keys = kms_client.projects().locations().keyRings().cryptoKeys()
-    request = crypto_keys.cryptoKeyVersions().patch(
-        name=name, body={'state': 'ENABLED'}, updateMask='state')
-    response = request.execute()
+    # Use the KMS API to disable the CryptoKeyVersion.
+    crypto_key_version = {'name': name, 'state': enums.CryptoKeyVersion.ENABLED}
+    update_mask = {'paths': ["state"]}
 
+    response = client.update_crypto_key_version(crypto_key_version, update_mask)
     print('CryptoKeyVersion {}\'s state has been set to {}.'.format(
-        name, response['state']))
+        name, response.state))
 # [END kms_enable_cryptokey_version]
 
 
@@ -165,19 +150,14 @@ def destroy_crypto_key_version(
     client = kms_v1.KeyManagementServiceClient()
 
     # Construct the resource name of the CryptoKeyVersion.
-    name = (
-        'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}/'
-        'cryptoKeyVersions/{}'
-        .format(
-            project_id, location_id, key_ring_id, crypto_key_id, version_id))
+    name = client.crypto_key_version_path(project_id, location_id, key_ring_id,
+                                          crypto_key_id, version_id)
 
-    # Use the KMS API to schedule the CryptoKeyVersion for destruction.
-    crypto_keys = kms_client.projects().locations().keyRings().cryptoKeys()
-    request = crypto_keys.cryptoKeyVersions().destroy(name=name, body={})
-    response = request.execute()
+    # Use the KMS API to mark the CryptoKeyVersion for destruction.
+    response = client.destroy_crypto_key_version(name)
 
     print('CryptoKeyVersion {}\'s state has been set to {}.'.format(
-        name, response['state']))
+        name, response.state))
 # [END kms_destroy_cryptokey_version]
 
 
@@ -190,19 +170,16 @@ def restore_crypto_key_version(
     client = kms_v1.KeyManagementServiceClient()
 
     # Construct the resource name of the CryptoKeyVersion.
-    name = (
-        'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}/'
-        'cryptoKeyVersions/{}'
-        .format(
-            project_id, location_id, key_ring_id, crypto_key_id, version_id))
+    name = client.crypto_key_version_path(project_id, location_id, key_ring_id,
+                                          crypto_key_id, version_id)
 
     # Use the KMS API to restore the CryptoKeyVersion.
-    crypto_keys = kms_client.projects().locations().keyRings().cryptoKeys()
-    request = crypto_keys.cryptoKeyVersions().restore(name=name, body={})
-    response = request.execute()
+    response = client.restore_crypto_key_version(name)
 
     print('CryptoKeyVersion {}\'s state has been set to {}.'.format(
-        name, response['state']))
+        name, response.state))
+
+
 # [END kms_restore_cryptokey_version]
 
 
