@@ -193,30 +193,25 @@ def add_member_to_crypto_key_policy(
     client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the CryptoKey.
-    parent = 'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}'.format(
-        project_id, location_id, key_ring_id, crypto_key_id)
-
+    resource = client.crypto_key_path_path(project_id, location_id, key_ring_id,
+                                         crypto_key_id)
     # Get the current IAM policy and add the new member to it.
-    crypto_keys = kms_client.projects().locations().keyRings().cryptoKeys()
-    policy_request = crypto_keys.getIamPolicy(resource=parent)
-    policy_response = policy_request.execute()
+    policy = client.get_iam_policy(resource)
+
+    # Add member
     bindings = []
-    if 'bindings' in policy_response.keys():
-        bindings = policy_response['bindings']
+    if 'bindings' in policy.keys():
+        bindings = policy['bindings']
     members = []
     members.append(member)
     new_binding = dict()
     new_binding['role'] = role
     new_binding['members'] = members
     bindings.append(new_binding)
-    policy_response['bindings'] = bindings
+    policy['bindings'] = bindings
 
     # Set the new IAM Policy.
-    crypto_keys = kms_client.projects().locations().keyRings().cryptoKeys()
-    request = crypto_keys.setIamPolicy(
-        resource=parent, body={'policy': policy_response})
-    request.execute()
-
+    client.set_iam_policy(resource)
     print_msg = (
         'Member {} added with role {} to policy for CryptoKey {} in KeyRing {}'
         .format(member, role, crypto_key_id, key_ring_id))
@@ -232,18 +227,15 @@ def get_key_ring_policy(project_id, location_id, key_ring_id):
     # Creates an API client for the KMS API.
     client = kms_v1.KeyManagementServiceClient()
 
-    # The resource name of the KeyRing.
-    parent = 'projects/{}/locations/{}/keyRings/{}'.format(
-        project_id, location_id, key_ring_id)
+    # The resource name of the CryptoKey.
+    resource = client.key_ring_path(project_id, location_id, key_ring_id)
 
-    # Get the current IAM policy.
-    request = kms_client.projects().locations().keyRings().getIamPolicy(
-        resource=parent)
-    response = request.execute()
+    # Get the current IAM policy and add the new member to it.
+    policy = client.get_iam_policy(resource)
 
-    if 'bindings' in response.keys():
+    if 'bindings' in policy.keys():
         print('Printing IAM policy for resource {}:'.format(parent))
-        for binding in response['bindings']:
+        for binding in policy['bindings']:
             print('')
             print('Role: {}'.format(binding['role']))
             print('Members:')
@@ -251,7 +243,7 @@ def get_key_ring_policy(project_id, location_id, key_ring_id):
                 print(member)
         print('')
     else:
-        print('No roles found for resource {}.'.format(parent))
+        print('No roles found for resource {}.'.format(resource))
 # [END kms_get_keyring_policy]
 
 
