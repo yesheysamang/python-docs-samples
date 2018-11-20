@@ -109,7 +109,7 @@ def disable_crypto_key_version(project_id, location_id, key_ring_id,
                                           crypto_key_id, version_id)
 
     # Use the KMS API to disable the CryptoKeyVersion.
-    crypto_key_version = {'name': name, 'state': enums.CryptoKeyVersion.DISABLED}
+    crypto_key_version = {'name': name, 'state': enums.CryptoKeyVersion.CryptoKeyVersionState.DISABLED}
     update_mask = {'paths': ["state"]}
 
     response = client.update_crypto_key_version(crypto_key_version, update_mask)
@@ -132,7 +132,7 @@ def enable_crypto_key_version(project_id, location_id, key_ring_id,
                                           crypto_key_id, version_id)
 
     # Use the KMS API to disable the CryptoKeyVersion.
-    crypto_key_version = {'name': name, 'state': enums.CryptoKeyVersion.ENABLED}
+    crypto_key_version = {'name': name, 'state': enums.CryptoKeyVersion.CryptoKeyVersionState.ENABLED}
     update_mask = {'paths': ["state"]}
 
     response = client.update_crypto_key_version(crypto_key_version, update_mask)

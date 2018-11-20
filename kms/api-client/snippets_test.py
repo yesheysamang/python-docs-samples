@@ -18,6 +18,7 @@ import random
 import string
 
 import googleapiclient.discovery
+from google.cloud.kms_v1 import enums
 
 import snippets
 
@@ -76,7 +77,7 @@ def test_disable_crypto_key_version(capsys):
         'cryptoKeyVersions/{}\'s state has been set to {}.'
         .format(
             PROJECT, LOCATION, KEY_RING, CRYPTO_KEY, VERSION,
-            'DISABLED'))
+            enums.CryptoKeyVersion.CryptoKeyVersionState.DISABLED))
     assert expected in out
 
 
@@ -89,7 +90,7 @@ def test_enable_crypto_key_version(capsys):
         'cryptoKeyVersions/{}\'s state has been set to {}.'
         .format(
             PROJECT, LOCATION, KEY_RING, CRYPTO_KEY, VERSION,
-            'ENABLED'))
+            enums.CryptoKeyVersion.CryptoKeyVersionState.ENABLED))
     assert expected in out
 
 
@@ -102,7 +103,7 @@ def test_destroy_crypto_key_version(capsys):
         'cryptoKeyVersions/{}\'s state has been set to {}.'
         .format(
             PROJECT, LOCATION, KEY_RING, CRYPTO_KEY, VERSION,
-            'DESTROY_SCHEDULED'))
+            enums.CryptoKeyVersion.CryptoKeyVersionState.DESTROY_SCHEDULED))
     assert expected in out
 
 
@@ -115,7 +116,7 @@ def test_restore_crypto_key_version(capsys):
         'cryptoKeyVersions/{}\'s state has been set to {}.'
         .format(
             PROJECT, LOCATION, KEY_RING, CRYPTO_KEY, VERSION,
-            'DISABLED'))
+            enums.CryptoKeyVersion.CryptoKeyVersionState.DISABLED))
     assert expected in out
 
 
