@@ -17,7 +17,7 @@
 def run_quickstart():
     # [START kms_quickstart]
     # Imports the Google APIs client library
-    import googleapiclient.discovery
+    from google.cloud import kms_v1
 
     # Your Google Cloud Platform project ID
     project_id = 'YOUR_PROJECT_ID'
@@ -26,19 +26,19 @@ def run_quickstart():
     location = 'global'
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the location associated with the key rings.
-    parent = 'projects/{}/locations/{}'.format(project_id, location)
+    parent = client.location_path(project_id, location)
 
     # Lists key rings
-    request = kms_client.projects().locations().keyRings().list(parent=parent)
-    response = request.execute()
+    response = client.list_key_rings(parent)
+    response_list = list(response)
 
-    if 'keyRings' in response and response['keyRings']:
+    if len(response_list) > 0:
         print('Key rings:')
-        for key_ring in response['keyRings']:
-            print(key_ring['name'])
+        for key_ring in response_list:
+            print(key_ring.name)
     else:
         print('No key rings found.')
     # [END kms_quickstart]
