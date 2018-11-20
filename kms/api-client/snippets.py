@@ -18,6 +18,7 @@ import base64
 import io
 
 from google.cloud import kms_v1
+from google.cloud.kms_v1 import enums
 
 
 # [START kms_create_keyring]
@@ -45,16 +46,16 @@ def create_crypto_key(project_id, location_id, key_ring_id, crypto_key_id):
     client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the KeyRing associated with the CryptoKey.
-    parent = 'projects/{}/locations/{}/keyRings/{}'.format(
-        project_id, location_id, key_ring_id)
+    parent = client.key_ring_path(project_id, location_id, key_ring_id)
+
+    # create the CryptoKey object template
+    purpose = enums.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT
+    crypto_key = {'purpose': purpose}
 
     # Create a CryptoKey for the given KeyRing.
-    request = kms_client.projects().locations().keyRings().cryptoKeys().create(
-        parent=parent, body={'purpose': 'ENCRYPT_DECRYPT'},
-        cryptoKeyId=crypto_key_id)
-    response = request.execute()
+    response = client.create_crypto_key(parent, crypto_key_id, crypto_key)
 
-    print('Created CryptoKey {}.'.format(response['name']))
+    print('Created CryptoKey {}.'.format(response.Name))
 # [END kms_create_cryptokey]
 
 
