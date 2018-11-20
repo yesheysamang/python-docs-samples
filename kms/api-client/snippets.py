@@ -56,7 +56,7 @@ def create_crypto_key(project_id, location_id, key_ring_id, crypto_key_id):
     # Create a CryptoKey for the given KeyRing.
     response = client.create_crypto_key(parent, crypto_key_id, crypto_key)
 
-    print('Created CryptoKey {}.'.format(response.Name))
+    print('Created CryptoKey {}.'.format(response.name))
 # [END kms_create_cryptokey]
 
 
@@ -79,7 +79,7 @@ def encrypt_symmetric(project_id, location_id, key_ring_id, crypto_key_id,
 
 
 # [START kms_decrypt]
-def decrypt_symmettric(project_id, location_id, key_ring_id, crypto_key_id,
+def decrypt_symmetric(project_id, location_id, key_ring_id, crypto_key_id,
                        ciphertext):
     """Decrypts input ciphertext using the provided symmetric CryptoKey."""
 
@@ -349,7 +349,7 @@ if __name__ == '__main__':
             args.infile,
             args.outfile)
     elif args.command == 'decrypt':
-        decrypt_symmettric(
+        decrypt_symmetric(
             args.project,
             args.location,
             args.key_ring,

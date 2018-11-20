@@ -63,30 +63,8 @@ def test_create_crypto_key(capsys):
 
 
 def test_encrypt_decrypt(capsys, tmpdir):
-    # Write to a plaintext file.
-    tmpdir.join('in.txt').write('SampleText')
-
-    # Construct temporary files.
-    plaintext_file = tmpdir.join('in.txt')
-    encrypted_file = tmpdir.join('out.txt')
-    decrypted_file = tmpdir.join('out2.txt')
-
     # Encrypt text and then decrypt it.
-    snippets.encrypt(
-        PROJECT, LOCATION, KEY_RING, CRYPTO_KEY,
-        str(plaintext_file), str(encrypted_file))
-    snippets.decrypt(
-        PROJECT, LOCATION, KEY_RING, CRYPTO_KEY,
-        str(encrypted_file), str(decrypted_file))
-
-    # Make sure the decrypted text matches the original text.
-    decrypted_text = decrypted_file.read()
-    assert decrypted_text == 'SampleText'
-
-    # Make sure other output is as expected.
-    out, _ = capsys.readouterr()
-    assert 'Saved ciphertext to {}.'.format(str(encrypted_file)) in out
-    assert 'Saved plaintext to {}.'.format(str(decrypted_file)) in out
+    assert False
 
 
 def test_disable_crypto_key_version(capsys):
