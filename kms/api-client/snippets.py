@@ -17,7 +17,7 @@ import argparse
 import base64
 import io
 
-import googleapiclient.discovery
+from google.cloud import kms_v1
 
 
 # [START kms_create_keyring]
@@ -25,17 +25,15 @@ def create_key_ring(project_id, location_id, key_ring_id):
     """Creates a KeyRing in the given location (e.g. global)."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the location associated with the KeyRing.
-    parent = 'projects/{}/locations/{}'.format(project_id, location_id)
+    parent = client.location_path(project_id, location)
 
     # Create KeyRing
-    request = kms_client.projects().locations().keyRings().create(
-        parent=parent, body={}, keyRingId=key_ring_id)
-    response = request.execute()
+    response = client.create_key_ring(parent, key_ring_id)
 
-    print('Created KeyRing {}.'.format(response['name']))
+    print('Created KeyRing {}.'.format(response.Name))
 # [END kms_create_keyring]
 
 
@@ -44,7 +42,7 @@ def create_crypto_key(project_id, location_id, key_ring_id, crypto_key_id):
     """Creates a CryptoKey within a KeyRing in the given location."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the KeyRing associated with the CryptoKey.
     parent = 'projects/{}/locations/{}/keyRings/{}'.format(
@@ -69,7 +67,7 @@ def encrypt(project_id, location_id, key_ring_id, crypto_key_id,
     """
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the CryptoKey.
     name = 'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}'.format(
@@ -102,7 +100,7 @@ def decrypt(project_id, location_id, key_ring_id, crypto_key_id,
     using the provided CryptoKey and saves it to plaintext_file_name."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the CryptoKey.
     name = 'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}'.format(
@@ -135,7 +133,7 @@ def disable_crypto_key_version(project_id, location_id, key_ring_id,
     KeyRing."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # Construct the resource name of the CryptoKeyVersion.
     name = (
@@ -162,7 +160,7 @@ def enable_crypto_key_version(project_id, location_id, key_ring_id,
     KeyRing."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # Construct the resource name of the CryptoKeyVersion.
     name = (
@@ -189,7 +187,7 @@ def destroy_crypto_key_version(
     KeyRing for destruction 24 hours in the future."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # Construct the resource name of the CryptoKeyVersion.
     name = (
@@ -214,7 +212,7 @@ def restore_crypto_key_version(
     """Restores a CryptoKeyVersion that is scheduled for destruction."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # Construct the resource name of the CryptoKeyVersion.
     name = (
@@ -240,7 +238,7 @@ def add_member_to_crypto_key_policy(
     (IAM) policy for a given CryptoKey associated with a KeyRing."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the CryptoKey.
     parent = 'projects/{}/locations/{}/keyRings/{}/cryptoKeys/{}'.format(
@@ -280,7 +278,7 @@ def get_key_ring_policy(project_id, location_id, key_ring_id):
     and prints out roles and the members assigned to those roles."""
 
     # Creates an API client for the KMS API.
-    kms_client = googleapiclient.discovery.build('cloudkms', 'v1')
+    client = kms_v1.KeyManagementServiceClient()
 
     # The resource name of the KeyRing.
     parent = 'projects/{}/locations/{}/keyRings/{}'.format(
