@@ -14,8 +14,6 @@
 # See the License for the specific language governing permissions and
 
 import argparse
-import base64
-import io
 
 from google.cloud import kms_v1
 from google.cloud.kms_v1 import enums
@@ -31,10 +29,13 @@ def create_key_ring(project_id, location_id, key_ring_id):
     # The resource name of the location associated with the KeyRing.
     parent = client.location_path(project_id, location_id)
 
-    # Create KeyRing
-    response = client.create_key_ring(parent, key_ring_id)
+    # The keyring object template
+    keyring = {'name': client.key_ring_path(project_id, location_id, key_ring_id)}
 
-    print('Created KeyRing {}.'.format(response.Name))
+    # Create KeyRing
+    response = client.create_key_ring(parent, key_ring_id, keyring)
+
+    print('Created KeyRing {}.'.format(response.name))
 # [END kms_create_keyring]
 
 
@@ -79,7 +80,7 @@ def encrypt_symmetric(project_id, location_id, key_ring_id, crypto_key_id,
 
 # [START kms_decrypt]
 def decrypt_symmettric(project_id, location_id, key_ring_id, crypto_key_id,
-                      ciphertext):
+                       ciphertext):
     """Decrypts input ciphertext using the provided symmetric CryptoKey."""
 
     # Creates an API client for the KMS API.
@@ -194,7 +195,7 @@ def add_member_to_crypto_key_policy(
 
     # The resource name of the CryptoKey.
     resource = client.crypto_key_path_path(project_id, location_id, key_ring_id,
-                                         crypto_key_id)
+                                           crypto_key_id)
     # Get the current IAM policy and add the new member to it.
     policy = client.get_iam_policy(resource)
 
@@ -234,7 +235,7 @@ def get_key_ring_policy(project_id, location_id, key_ring_id):
     policy = client.get_iam_policy(resource)
 
     if 'bindings' in policy.keys():
-        print('Printing IAM policy for resource {}:'.format(parent))
+        print('Printing IAM policy for resource {}:'.format(resource))
         for binding in policy['bindings']:
             print('')
             print('Role: {}'.format(binding['role']))
@@ -340,7 +341,7 @@ if __name__ == '__main__':
             args.key_ring,
             args.crypto_key)
     elif args.command == 'encrypt':
-        encrypt(
+        encrypt_symmetric(
             args.project,
             args.location,
             args.key_ring,
@@ -348,7 +349,7 @@ if __name__ == '__main__':
             args.infile,
             args.outfile)
     elif args.command == 'decrypt':
-        decrypt(
+        decrypt_symmettric(
             args.project,
             args.location,
             args.key_ring,
