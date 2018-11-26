@@ -13,13 +13,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 
-import pytest
+import time
 from os import environ
+
 from google.cloud import kms_v1
-from google.cloud.kms_v1 import enums
+
+import pytest
 
 import snippets
-import time
+
 
 class TestKMSSnippets:
 
@@ -37,8 +39,8 @@ class TestKMSSnippets:
     message = 'test message 123'
     message_bytes = message.encode('utf-8')
 
-    # @pytest.mark.skip(reason="There's currently no method to delete keyrings, \
-                              # so we should avoid creating resources")
+    @pytest.mark.skip(reason="There's currently no method to delete keyrings, \
+                              so we should avoid creating resources")
     def test_create_key_ring(self):
         ring_id = self.keyring_id + '-testcreate' + str(int(time.time()))
         snippets.create_key_ring(self.project_id, self.location, ring_id)
@@ -48,8 +50,8 @@ class TestKMSSnippets:
                                                           ring_id))
         assert ring_id in result.name
 
-    # @pytest.mark.skip(reason="Deleting keys isn't instant, so we should avoid \
-                              # creating a large number of them in our tests")
+    @pytest.mark.skip(reason="Deleting keys isn't instant, so we should avoid \
+                              creating a large number of them in our tests")
     def test_create_crypto_key(self):
         key_id = self.symId + '-test' + str(int(time.time()))
         snippets.create_crypto_key(self.project_id, self.location,
@@ -67,7 +69,6 @@ class TestKMSSnippets:
 
     def test_get_ring_policy(self):
         pass
-
 
     def test_add_member_to_crypto_key_policy(self):
         pass
