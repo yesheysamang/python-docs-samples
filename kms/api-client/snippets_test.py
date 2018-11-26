@@ -17,6 +17,7 @@ import time
 from os import environ
 
 from google.cloud import kms_v1
+from google.cloud.kms_v1 import enums
 
 import pytest
 
@@ -30,11 +31,12 @@ class TestKMSSnippets:
     location = 'global'
     parent = 'projects/{}/locations/{}'.format(project_id, location)
     keyring_path = '{}/keyRings/{}'.format(parent, keyring_id)
+    version = '1'
 
     symId = 'symmetric'
 
     sym = '{}/cryptoKeys/{}'.format(keyring_path, symId)
-    sym_version = '{}/cryptoKeyVersions/1'.format(sym)
+    sym_version = '{}/cryptoKeyVersions/{}'.format(sym, version)
 
     message = 'test message 123'
     message_bytes = message.encode('utf-8')
@@ -65,13 +67,41 @@ class TestKMSSnippets:
 
     # tests disable/enable/destroy/restore
     def test_key_change_version_state(self):
-        pass
+        client = kms_v1.KeyManagementServiceClient()
+        name = client.crypto_key_version_path(self.project_id, self.location,
+                                              self.keyring_id, self.symId,
+                                              self.version)
+        state_enum = enums.CryptoKeyVersion.CryptoKeyVersionState
+        # test disable
+        snippets.disable_crypto_key_version(self.project_id, self.location,
+                                            self.keyring_id, self.symId,
+                                            self.version)
+        response = client.get_crypto_key_version(name)
+        assert response.state == state_enum.DISABLED
+        # test destroy
+        snippets.destroy_crypto_key_version(self.project_id, self.location,
+                                            self.keyring_id, self.symId,
+                                            self.version)
+        response = client.get_crypto_key_version(name)
+        assert response.state == state_enum.DESTROY_SCHEDULED
+        # test restore
+        snippets.restore_crypto_key_version(self.project_id, self.location,
+                                            self.keyring_id, self.symId,
+                                            self.version)
+        response = client.get_crypto_key_version(name)
+        assert response.state == state_enum.DISABLED
+        # test re-enable
+        snippets.enable_crypto_key_version(self.project_id, self.location,
+                                           self.keyring_id, self.symId,
+                                           self.version)
+        response = client.get_crypto_key_version(name)
+        assert response.state == state_enum.ENABLED
 
     def test_get_ring_policy(self):
-        pass
+        assert False
 
     def test_add_member_to_crypto_key_policy(self):
-        pass
+        assert False
 
     def test_symmetric_encrypt_decrypt(self):
-        pass
+        assert False
