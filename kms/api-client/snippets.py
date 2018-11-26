@@ -200,19 +200,22 @@ def add_member_to_crypto_key_policy(
     policy = client.get_iam_policy(resource)
 
     # Add member
-    bindings = []
-    if 'bindings' in policy.keys():
-        bindings = policy['bindings']
-    members = []
-    members.append(member)
-    new_binding = dict()
-    new_binding['role'] = role
-    new_binding['members'] = members
-    bindings.append(new_binding)
-    policy['bindings'] = bindings
+    old_bindings = list(policy.bindings)
+    found = False
+    for b in old_bindings:
+        if b['role'] == role:
+            found = True
+            if member not in b['members']:
+                b['members'].append(member)
+    if not found:
+        new_binding = {'role': role, 'members': [member]}
+        old_bindings.append(new_binding)
+    new_policy = {'version': policy.version,
+                  'etag': policy.etag,
+                  'bindings': old_bindings}
 
     # Set the new IAM Policy.
-    client.set_iam_policy(resource)
+    client.set_iam_policy(resource, new_policy)
     print_msg = (
         'Member {} added with role {} to policy for CryptoKey {} in KeyRing {}'
         .format(member, role, crypto_key_id, key_ring_id))
@@ -234,17 +237,11 @@ def get_key_ring_policy(project_id, location_id, key_ring_id):
     # Get the current IAM policy and add the new member to it.
     policy = client.get_iam_policy(resource)
 
-    if 'bindings' in policy.keys():
-        print('Printing IAM policy for resource {}:'.format(resource))
-        for binding in policy['bindings']:
-            print('')
-            print('Role: {}'.format(binding['role']))
-            print('Members:')
-            for member in binding['members']:
-                print(member)
-        print('')
-    else:
-        print('No roles found for resource {}.'.format(resource))
+    print('Printing IAM policy for resource {}:'.format(resource))
+    for b in policy.bindings:
+        for m in b['members']:
+            print('Role: {} Member: {}'.format(b['role'], m))
+
 # [END kms_get_keyring_policy]
 
 
