@@ -18,6 +18,7 @@ from os import environ
 
 from google.cloud import kms_v1
 from google.cloud.kms_v1 import enums
+from google.iam.v1.policy_pb2 import Policy
 
 import pytest
 
@@ -98,9 +99,14 @@ class TestKMSSnippets:
         assert response.state == state_enum.ENABLED
 
     def test_get_ring_policy(self):
+        policy = snippets.get_key_ring_policy(self.project_id,
+                                              self.location, self.symId)
+        assert type(policy) is Policy
+
+    def test_add_member_ring(self):
         assert False
 
-    def test_add_member_to_crypto_key_policy(self):
+    def test_add_remove_member_key(self):
         assert False
 
     def test_symmetric_encrypt_decrypt(self):

@@ -241,6 +241,7 @@ def get_key_ring_policy(project_id, location_id, key_ring_id):
     for b in policy.bindings:
         for m in b['members']:
             print('Role: {} Member: {}'.format(b['role'], m))
+    return policy
 
 # [END kms_get_keyring_policy]
 
