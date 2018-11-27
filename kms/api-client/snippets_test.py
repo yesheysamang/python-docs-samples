@@ -42,6 +42,9 @@ class TestKMSSnippets:
     message = 'test message 123'
     message_bytes = message.encode('utf-8')
 
+    member = 'group:test@google.com'
+    role = 'roles/viewer'
+
     @pytest.mark.skip(reason="There's currently no method to delete keyrings, \
                               so we should avoid creating resources")
     def test_create_key_ring(self):
@@ -100,11 +103,34 @@ class TestKMSSnippets:
 
     def test_get_ring_policy(self):
         policy = snippets.get_key_ring_policy(self.project_id,
-                                              self.location, self.symId)
+                                              self.location, self.keyring_id)
         assert type(policy) is Policy
 
-    def test_add_member_ring(self):
-        assert False
+    def test_add_remove_member_ring(self):
+        # add member
+        snippets.add_member_to_key_ring_policy(self.project_id, self.location,
+                                               self.keyring_id, self.member,
+                                               self.role)
+        policy = snippets.get_key_ring_policy(self.project_id,
+                                              self.location, self.keyring_id)
+        found = False
+        for b in list(policy.bindings):
+            if b.role == self.role and self.member in b.members:
+                found = True
+        assert found
+        # remove member
+        snippets.remove_member_from_key_ring_policy(self.project_id,
+                                                    self.location,
+                                                    self.keyring_id,
+                                                    self.member,
+                                                    self.role)
+        policy = snippets.get_key_ring_policy(self.project_id,
+                                              self.location, self.keyring_id)
+        found = False
+        for b in list(policy.bindings):
+            if b.role == self.role and self.member in b.members:
+                found = True
+        assert not found
 
     def test_add_remove_member_key(self):
         assert False
