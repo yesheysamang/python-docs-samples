@@ -25,9 +25,12 @@ from google.cloud import kms_v1
 
 
 # [START kms_get_asymmetric_public]
-def get_asymmetric_public_key(key_path):
+def get_asymmetric_public_key(key_name):
     """
     Retrieves the public key from a saved asymmetric key pair on Cloud KMS
+
+    Example key_name:
+      "projects/PROJECT_ID/locations/global/keyRings/RING_ID/cryptoKeys/KEY_ID"
 
     Requires:
       cryptography.hazmat.backends.default_backend
@@ -35,8 +38,7 @@ def get_asymmetric_public_key(key_path):
     """
 
     client = kms_v1.KeyManagementServiceClient()
-
-    response = client.get_public_key(key_path)
+    response = client.get_public_key(key_name)
 
     key_txt = response.pem.encode('ascii')
     key = serialization.load_pem_public_key(key_txt, default_backend())
@@ -45,39 +47,41 @@ def get_asymmetric_public_key(key_path):
 
 
 # [START kms_decrypt_rsa]
-def decrypt_rsa(ciphertext, key_path):
+def decrypt_rsa(ciphertext, key_name):
     """
     Decrypt the input ciphertext (bytes) using an
     'RSA_DECRYPT_OAEP_2048_SHA256' private key stored on Cloud KMS
 
-    Requires:
-      base64
+    Example key_name:
+      "projects/PROJECT_ID/locations/global/keyRings/RING_ID/cryptoKeys/KEY_ID"
     """
 
     client = kms_v1.KeyManagementServiceClient()
-
-    response = client.asymmetric_decrypt(key_path, ciphertext)
-
+    response = client.asymmetric_decrypt(key_name, ciphertext)
     return response.plaintext
 # [END kms_decrypt_rsa]
 
 
 # [START kms_encrypt_rsa]
-def encrypt_rsa(plaintext, key_path):
+def encrypt_rsa(plaintext, key_name):
     """
     Encrypt the input plaintext (bytes) locally using an
     'RSA_DECRYPT_OAEP_2048_SHA256' public key retrieved from Cloud KMS
+
+    Example key_name:
+      "projects/PROJECT_ID/locations/global/keyRings/RING_ID/cryptoKeys/KEY_ID"
 
     Requires:
       cryptography.hazmat.primitives.asymmetric.padding
       cryptography.hazmat.primitives.hashes
     """
-
+    # get the public key
     client = kms_v1.KeyManagementServiceClient()
-    response = client.get_public_key(key_path)
+    response = client.get_public_key(key_name)
     key_txt = response.pem.encode('ascii')
     public_key = serialization.load_pem_public_key(key_txt, default_backend())
 
+    # encrypt plaintext
     pad = padding.OAEP(mgf=padding.MGF1(algorithm=hashes.SHA256()),
                        algorithm=hashes.SHA256(),
                        label=None)
@@ -86,12 +90,14 @@ def encrypt_rsa(plaintext, key_path):
 
 
 # [START kms_sign_asymmetric]
-def sign_asymmetric(message, key_path):
+def sign_asymmetric(message, key_name):
     """
     Create a signature for a message using a private key stored on Cloud KMS
 
+    Example key_name:
+      "projects/PROJECT_ID/locations/global/keyRings/RING_ID/cryptoKeys/KEY_ID"
+
     Requires:
-      base64
       hashlib
     """
     # Note: some key algorithms will require a different hash function
@@ -101,16 +107,19 @@ def sign_asymmetric(message, key_path):
 
     digest_json = {'sha256': digest_bytes}
 
-    response = client.asymmetric_sign(key_path, digest_json)
+    response = client.asymmetric_sign(key_name, digest_json)
     return response.signature
 # [END kms_sign_asymmetric]
 
 
 # [START kms_verify_signature_rsa]
-def verify_signature_rsa(signature, message, key_path):
+def verify_signature_rsa(signature, message, key_name):
     """
     Verify the validity of an 'RSA_SIGN_PSS_2048_SHA256' signature for the
     specified message
+
+    Example key_name:
+      "projects/PROJECT_ID/locations/global/keyRings/RING_ID/cryptoKeys/KEY_ID"
 
     Requires:
       cryptography.exceptions.InvalidSignature
@@ -119,11 +128,13 @@ def verify_signature_rsa(signature, message, key_path):
       cryptography.hazmat.primitives.hashes
       hashlib
     """
+    # get the public key
     client = kms_v1.KeyManagementServiceClient()
-    response = client.get_public_key(key_path)
+    response = client.get_public_key(key_name)
     key_txt = response.pem.encode('ascii')
     public_key = serialization.load_pem_public_key(key_txt, default_backend())
 
+    # get the digest of the message
     digest_bytes = hashlib.sha256(message).digest()
 
     try:
@@ -141,10 +152,13 @@ def verify_signature_rsa(signature, message, key_path):
 
 
 # [START kms_verify_signature_ec]
-def verify_signature_ec(signature, message, key_path):
+def verify_signature_ec(signature, message, key_name):
     """
     Verify the validity of an 'EC_SIGN_P256_SHA256' signature
     for the specified message
+
+    Example key_name:
+      "projects/PROJECT_ID/locations/global/keyRings/RING_ID/cryptoKeys/KEY_ID"
 
     Requires:
       cryptography.exceptions.InvalidSignature
@@ -153,11 +167,13 @@ def verify_signature_ec(signature, message, key_path):
       cryptography.hazmat.primitives.hashes
       hashlib
     """
+    # get the public key
     client = kms_v1.KeyManagementServiceClient()
-    response = client.get_public_key(key_path)
+    response = client.get_public_key(key_name)
     key_txt = response.pem.encode('ascii')
     public_key = serialization.load_pem_public_key(key_txt, default_backend())
 
+    # get the digest of the message
     digest_bytes = hashlib.sha256(message).digest()
 
     try:
