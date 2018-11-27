@@ -16,6 +16,7 @@
 import time
 from os import environ
 
+from google.api_core.exceptions import GoogleAPICallError
 from google.cloud import kms_v1
 from google.cloud.kms_v1 import enums
 from google.iam.v1.policy_pb2 import Policy
@@ -23,6 +24,40 @@ from google.iam.v1.policy_pb2 import Policy
 import pytest
 
 import snippets
+
+
+def create_key_helper(key_id, purpose, algorithm, t):
+    try:
+        client = kms_v1.KeyManagementServiceClient()
+        parent = client.key_ring_path(t.project_id, t.location, t.keyring_id)
+
+        crypto_key = {'purpose': purpose,
+                      'version_template': {'algorithm': algorithm}}
+        client.create_crypto_key(parent, key_id, crypto_key)
+        return True
+    except GoogleAPICallError:
+        # key already exists
+        return False
+
+
+def setup_module(module):
+    """
+    Set up keys in project if needed
+    """
+    t = TestKMSSnippets()
+    try:
+        # create keyring
+        snippets.create_key_ring(t.project_id, t.location, t.keyring_id)
+    except GoogleAPICallError:
+        # keyring already exists
+        pass
+    s = create_key_helper(t.symId,
+                          enums.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT,
+                          enums.CryptoKeyVersion.CryptoKeyVersionAlgorithm.GOOGLE_SYMMETRIC_ENCRYPTION,
+                          t)
+    if s:
+        # leave time for key to initialize
+        time.sleep(20)
 
 
 class TestKMSSnippets:
