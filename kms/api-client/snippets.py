@@ -29,13 +29,14 @@ def create_key_ring(project_id, location_id, key_ring_id):
     parent = client.location_path(project_id, location_id)
 
     # The keyring object template
-    keyring_path = client.key_ring_path(project_id, location_id, key_ring_id)
-    keyring_request = {'name': keyring_path}
+    keyring_name = client.key_ring_path(project_id, location_id, key_ring_id)
+    keyring = {'name': keyring_name}
 
-    # Create KeyRing
-    response = client.create_key_ring(parent, key_ring_id, keyring_request)
+    # Create a KeyRing
+    response = client.create_key_ring(parent, key_ring_id, keyring)
 
     print('Created KeyRing {}.'.format(response.name))
+    return response
 # [END kms_create_keyring]
 
 
@@ -49,7 +50,7 @@ def create_crypto_key(project_id, location_id, key_ring_id, crypto_key_id):
     # The resource name of the KeyRing associated with the CryptoKey.
     parent = client.key_ring_path(project_id, location_id, key_ring_id)
 
-    # create the CryptoKey object template
+    # Create the CryptoKey object template
     purpose = enums.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT
     crypto_key = {'purpose': purpose}
 
@@ -57,6 +58,7 @@ def create_crypto_key(project_id, location_id, key_ring_id, crypto_key_id):
     response = client.create_crypto_key(parent, crypto_key_id, crypto_key)
 
     print('Created CryptoKey {}.'.format(response.name))
+    return response
 # [END kms_create_cryptokey]
 
 
@@ -113,6 +115,7 @@ def disable_crypto_key_version(project_id, location_id, key_ring_id,
     version = {'name': name, 'state': new_state}
     update_mask = {'paths': ["state"]}
 
+    # Print results
     response = client.update_crypto_key_version(version, update_mask)
     print('CryptoKeyVersion {}\'s state has been set to {}.'.format(
         name, response.state))
@@ -132,11 +135,12 @@ def enable_crypto_key_version(project_id, location_id, key_ring_id,
     name = client.crypto_key_version_path(project_id, location_id, key_ring_id,
                                           crypto_key_id, version_id)
 
-    # Use the KMS API to disable the CryptoKeyVersion.
+    # Use the KMS API to enable the CryptoKeyVersion.
     new_state = enums.CryptoKeyVersion.CryptoKeyVersionState.ENABLED
     version = {'name': name, 'state': new_state}
     update_mask = {'paths': ["state"]}
 
+    # Print results
     response = client.update_crypto_key_version(version, update_mask)
     print('CryptoKeyVersion {}\'s state has been set to {}.'.format(
         name, response.state))
@@ -159,6 +163,7 @@ def destroy_crypto_key_version(
     # Use the KMS API to mark the CryptoKeyVersion for destruction.
     response = client.destroy_crypto_key_version(name)
 
+    # Print results
     print('CryptoKeyVersion {}\'s state has been set to {}.'.format(
         name, response.state))
 # [END kms_destroy_cryptokey_version]
@@ -179,6 +184,7 @@ def restore_crypto_key_version(
     # Use the KMS API to restore the CryptoKeyVersion.
     response = client.restore_crypto_key_version(name)
 
+    # Print results
     print('CryptoKeyVersion {}\'s state has been set to {}.'.format(
         name, response.state))
 
@@ -198,26 +204,18 @@ def add_member_to_crypto_key_policy(
     # The resource name of the CryptoKey.
     resource = client.crypto_key_path_path(project_id, location_id,
                                            key_ring_id, crypto_key_id)
-    # Get the current IAM policy and add the new member to it.
+    # Get the current IAM policy.
     policy = client.get_iam_policy(resource)
 
     # Add member
-    old_bindings = list(policy.bindings)
-    found = False
-    for b in old_bindings:
-        if b.role == role:
-            found = True
-            if member not in b.members:
-                b.members.append(member)
-    if not found:
-        new_binding = {'role': role, 'members': [member]}
-        old_bindings.append(new_binding)
-    new_policy = {'version': policy.version,
-                  'etag': policy.etag,
-                  'bindings': old_bindings}
+    policy.bindings.add(
+        role=role,
+        members=[member])
 
-    # Set the new IAM Policy.
-    client.set_iam_policy(resource, new_policy)
+    # Update the IAM Policy.
+    client.set_iam_policy(resource, policy)
+
+    # Print results
     print('Member {} added with role {} to policy for CryptoKey {} \
            in KeyRing {}'.format(member, role, crypto_key_id, key_ring_id))
 # [END kms_add_member_to_cryptokey_policy]
@@ -232,29 +230,21 @@ def add_member_to_key_ring_policy(
     # Creates an API client for the KMS API.
     client = kms_v1.KeyManagementServiceClient()
 
-    # The resource name of the Key Ring.
+    # The resource name of the KeyRing.
     resource = client.key_ring_path(project_id, location_id, key_ring_id)
 
-    # Get the current IAM policy and add the new member to it.
+    # Get the current IAM policy.
     policy = client.get_iam_policy(resource)
 
     # Add member
-    old_bindings = list(policy.bindings)
-    found = False
-    for b in old_bindings:
-        if b.role == role:
-            found = True
-            if member not in b.members:
-                b.members.append(member)
-    if not found:
-        new_binding = {'role': role, 'members': [member]}
-        old_bindings.append(new_binding)
-    new_policy = {'version': policy.version,
-                  'etag': policy.etag,
-                  'bindings': old_bindings}
+    policy.bindings.add(
+        role=role,
+        members=[member])
 
-    # Set the new IAM Policy.
-    client.set_iam_policy(resource, new_policy)
+    # Update the IAM Policy.
+    client.set_iam_policy(resource, policy)
+
+    # Print results
     print('Member {} added with role {} to policy in KeyRing {}'
           .format(member, role, key_ring_id))
 
@@ -273,31 +263,20 @@ def remove_member_from_crypto_key_policy(
     # The resource name of the CryptoKey.
     resource = client.crypto_key_path_path(project_id, location_id,
                                            key_ring_id, crypto_key_id)
-    # Get the current IAM policy and add the new member to it.
+    # Get the current IAM policy.
     policy = client.get_iam_policy(resource)
 
-    # Add member
-    old_bindings = list(policy.bindings)
-    found = False
-    new_bindings = []
-    for b in old_bindings:
+    # Remove member
+    for b in list(policy.bindings):
         if b.role == role and member in b.members:
-            found = True
             b.members.remove(member)
-        new_bindings.append(b)
-    if found:
-        new_policy = {'version': policy.version,
-                      'etag': policy.etag,
-                      'bindings': new_bindings}
-        # Set the new IAM Policy.
-        client.set_iam_policy(resource, new_policy)
-        print('Member {} added with role {} to policy for CryptoKey {} \
-               in KeyRing {}'.format(member, role, crypto_key_id, key_ring_id))
-        return True
-    else:
-        print('Member {} not found in policy for CryptoKey {} in KeyRing {}'
-              .format(member, crypto_key_id, key_ring_id))
-        return False
+
+    # Update the IAM Policy.
+    client.set_iam_policy(resource, policy)
+
+    # Print results
+    print('Member {} removed from role {} for CryptoKey in KeyRing {}'
+          .format(member, role, crypto_key_id, key_ring_id))
 # [END kms_remove_member_from_cryptokey_policy]
 
 
@@ -309,34 +288,23 @@ def remove_member_from_key_ring_policy(project_id, location_id, key_ring_id,
     # Creates an API client for the KMS API.
     client = kms_v1.KeyManagementServiceClient()
 
-    # The resource name of the CryptoKey.
+    # The resource name of the KeyRing.
     resource = client.key_ring_path(project_id, location_id, key_ring_id)
 
-    # Get the current IAM policy and add the new member to it.
+    # Get the current IAM policy.
     policy = client.get_iam_policy(resource)
 
-    # Add member
-    old_bindings = list(policy.bindings)
-    found = False
-    new_bindings = []
-    for b in old_bindings:
+    # Remove member
+    for b in list(policy.bindings):
         if b.role == role and member in b.members:
-            found = True
             b.members.remove(member)
-        new_bindings.append(b)
-    if found:
-        new_policy = {'version': policy.version,
-                      'etag': policy.etag,
-                      'bindings': new_bindings}
-        # Set the new IAM Policy.
-        client.set_iam_policy(resource, new_policy)
-        print('Member {} added with role {} to policy for KeyRing {}'
-              .format(member, role, key_ring_id))
-        return True
-    else:
-        print('Member {} not found in policy for KeyRing {}'
-              .format(member, key_ring_id))
-        return False
+
+    # Update the IAM Policy.
+    client.set_iam_policy(resource, policy)
+
+    # Print results
+    print('Member {} removed from role {} for KeyRing {}'
+          .format(member, role, key_ring_id))
 
 
 # [START kms_get_keyring_policy]
@@ -347,12 +315,13 @@ def get_key_ring_policy(project_id, location_id, key_ring_id):
     # Creates an API client for the KMS API.
     client = kms_v1.KeyManagementServiceClient()
 
-    # The resource name of the CryptoKey.
+    # The resource name of the KeyRing.
     resource = client.key_ring_path(project_id, location_id, key_ring_id)
 
-    # Get the current IAM policy and add the new member to it.
+    # Get the current IAM policy.
     policy = client.get_iam_policy(resource)
 
+    # Print results
     print('Printing IAM policy for resource {}:'.format(resource))
     for b in policy.bindings:
         for m in b.members:
@@ -372,9 +341,10 @@ def get_crypto_key_policy(project_id, location_id, key_ring_id, crypto_key_id):
     resource = client.crypto_key_path_path(project_id, location_id,
                                            key_ring_id, crypto_key_id)
 
-    # Get the current IAM policy and add the new member to it.
+    # Get the current IAM policy.
     policy = client.get_iam_policy(resource)
 
+    # Print results
     print('Printing IAM policy for resource {}:'.format(resource))
     for b in policy.bindings:
         for m in b.members:
