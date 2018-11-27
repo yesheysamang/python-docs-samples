@@ -106,7 +106,8 @@ class TestKMSSnippets:
                                               self.location, self.keyring_id)
         assert type(policy) is Policy
 
-    def test_add_remove_member_ring(self):
+    # tests get/add/remove policy members
+    def test_ring_policy(self):
         # add member
         snippets.add_member_to_key_ring_policy(self.project_id, self.location,
                                                self.keyring_id, self.member,
@@ -132,7 +133,8 @@ class TestKMSSnippets:
                 found = True
         assert not found
 
-    def test_add_remove_member_key(self):
+    # tests get/add/remove policy members
+    def test_key_policy(self):
         # add member
         snippets.add_member_to_crypto_key_policy(self.project_id,
                                                  self.location,
