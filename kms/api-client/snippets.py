@@ -359,8 +359,28 @@ def get_key_ring_policy(project_id, location_id, key_ring_id):
         for m in b.members:
             print('Role: {} Member: {}'.format(b.role, m))
     return policy
-
 # [END kms_get_keyring_policy]
+
+
+def get_crypto_key_policy(project_id, location_id, key_ring_id, crypto_key_id):
+    """Gets the Identity and Access Management (IAM) policy for a given KeyRing
+    and prints out roles and the members assigned to those roles."""
+
+    # Creates an API client for the KMS API.
+    client = kms_v1.KeyManagementServiceClient()
+
+    # The resource name of the CryptoKey.
+    resource = client.crypto_key_path_path(project_id, location_id,
+                                           key_ring_id, crypto_key_id)
+
+    # Get the current IAM policy and add the new member to it.
+    policy = client.get_iam_policy(resource)
+
+    print('Printing IAM policy for resource {}:'.format(resource))
+    for b in policy.bindings:
+        for m in b.members:
+            print('Role: {} Member: {}'.format(b.role, m))
+    return policy
 
 
 if __name__ == '__main__':

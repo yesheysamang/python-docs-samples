@@ -133,7 +133,38 @@ class TestKMSSnippets:
         assert not found
 
     def test_add_remove_member_key(self):
-        assert False
+        # add member
+        snippets.add_member_to_crypto_key_policy(self.project_id,
+                                                 self.location,
+                                                 self.keyring_id,
+                                                 self.symId,
+                                                 self.member,
+                                                 self.role)
+        policy = snippets.get_crypto_key_policy(self.project_id,
+                                                self.location,
+                                                self.keyring_id,
+                                                self.symId)
+        found = False
+        for b in list(policy.bindings):
+            if b.role == self.role and self.member in b.members:
+                found = True
+        assert found
+        # remove member
+        snippets.remove_member_from_crypto_key_policy(self.project_id,
+                                                      self.location,
+                                                      self.keyring_id,
+                                                      self.symId,
+                                                      self.member,
+                                                      self.role)
+        policy = snippets.get_crypto_key_policy(self.project_id,
+                                                self.location,
+                                                self.keyring_id,
+                                                self.symId)
+        found = False
+        for b in list(policy.bindings):
+            if b.role == self.role and self.member in b.members:
+                found = True
+        assert not found
 
     def test_symmetric_encrypt_decrypt(self):
         assert False
