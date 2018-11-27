@@ -53,7 +53,8 @@ def setup_module(module):
         pass
     s = create_key_helper(t.symId,
                           enums.CryptoKey.CryptoKeyPurpose.ENCRYPT_DECRYPT,
-                          enums.CryptoKeyVersion.CryptoKeyVersionAlgorithm.GOOGLE_SYMMETRIC_ENCRYPTION,
+                          enums.CryptoKeyVersion.CryptoKeyVersionAlgorithm.
+                          GOOGLE_SYMMETRIC_ENCRYPTION,
                           t)
     if s:
         # leave time for key to initialize
