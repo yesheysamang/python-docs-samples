@@ -62,7 +62,6 @@ def setup_module(module):
 
 
 class TestKMSSnippets:
-
     project_id = environ['GCLOUD_PROJECT']
     keyring_id = 'kms-samples'
     location = 'global'
