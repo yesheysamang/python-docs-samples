@@ -169,4 +169,17 @@ class TestKMSSnippets:
         assert not found
 
     def test_symmetric_encrypt_decrypt(self):
-        assert False
+        cipher_bytes = snippets.encrypt_symmetric(self.project_id,
+                                                  self.location,
+                                                  self.keyring_id,
+                                                  self.symId,
+                                                  self.message_bytes)
+        plain_bytes = snippets.decrypt_symmetric(self.project_id,
+                                                 self.location,
+                                                 self.keyring_id,
+                                                 self.symId,
+                                                 cipher_bytes)
+        assert plain_bytes == self.message_bytes
+        assert cipher_bytes != self.message_bytes
+        plaintext = str(plain_bytes)
+        assert plaintext == self.message
