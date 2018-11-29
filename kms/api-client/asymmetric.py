@@ -21,7 +21,32 @@ from cryptography.hazmat.primitives import hashes, serialization
 from cryptography.hazmat.primitives.asymmetric import ec, padding, utils
 
 from google.cloud import kms_v1
-# from google.cloud.kms_v1 import enums
+from google.cloud.kms_v1 import enums
+
+
+# [START kms_create_asymmetric_key]
+def create_asymmetric_key(project_id, location_id, key_ring_id, crypto_key_id):
+    """Creates an RSA encrypt/decrypt key pair within a specified KeyRing."""
+
+    # Creates an API client for the KMS API.
+    client = kms_v1.KeyManagementServiceClient()
+
+    # The resource name of the KeyRing associated with the CryptoKey.
+    parent = client.key_ring_path(project_id, location_id, key_ring_id)
+
+    # Create the CryptoKey object template
+    purpose = enums.CryptoKey.CryptoKeyPurpose.ASYMMETRIC_DECRYPT
+    algorithm = enums.CryptoKeyVersion.CryptoKeyVersionAlgorithm.\
+        RSA_DECRYPT_OAEP_2048_SHA256,
+    crypto_key = {'purpose': purpose,
+                  'version_template': {'algorithm': algorithm}}
+
+    # Create a CryptoKey for the given KeyRing.
+    response = client.create_crypto_key(parent, crypto_key_id, crypto_key)
+
+    print('Created CryptoKey {}.'.format(response.name))
+    return response
+# [END kms_create_asymmetric_key]
 
 
 # [START kms_get_asymmetric_public]
